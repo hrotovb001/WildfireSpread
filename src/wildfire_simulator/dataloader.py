@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 class DataLoader:
     """Loads landscape GeoTIFF (path from LANDSCAPE env variable) and makes
-    elevation available as a 2‑D numpy array."""
+    elevation, slope, and aspect available as 2‑D numpy arrays."""
 
     def __init__(self):
         # Load environment from .env file
@@ -26,3 +26,9 @@ class DataLoader:
 
         # The first band (index 0) is elevation
         self.elevation = da.isel(band=0).values
+
+        # The second band (index 1) is slope
+        self.slope = da.isel(band=1).values
+
+        # The third band (index 2) is aspect
+        self.aspect = da.isel(band=2).values

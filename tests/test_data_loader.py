@@ -17,8 +17,8 @@ def test_landscape_layers():
    assert slope.max() != slope.min()
    assert not np.isnan(slope).any()
 
-   aspect = aspect.slope
+   aspect = loader.aspect
    assert isinstance(aspect, np.ndarray)
    assert len(aspect.shape) == 2
-   assert ascpect.max() != aspect.min()
-   assert not np.isnan(slope).any()
+   assert aspect.max() != aspect.min()
+   assert not np.isnan(aspect).any()
