@@ -53,3 +53,22 @@ def test_landscape_layers():
    assert canopy_bulk_density.max() != canopy_bulk_density.min()
    assert not np.isnan(canopy_bulk_density).any()
 
+def test_trails_layer():
+    loader = DataLoader()
+
+    trials = loader.trials
+    assert len(loader.trials) > 0
+
+    # each trial has a mask and a fire arrival time channel
+    trial = loader.trails[0]
+    assert isinstance(trial, np.ndarray)
+    assert len(trial.shape) == 3
+    assert trial.shape[0] == 2
+
+    # the mask indicates where the fire has been (0 or 1)
+    mask = trial[0]
+    assert ((arr == 0) | (arr == 1)).all()
+
+    # the arrival time indicates the time at which the fire reached a pixel (default to value of 0 for masked pixels)
+    arrival = trial[1]
+    assert not np.isnan(arrival).any()
