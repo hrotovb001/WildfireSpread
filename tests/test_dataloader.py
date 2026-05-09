@@ -60,7 +60,7 @@ def test_trails_layer():
     assert len(loader.trials) > 0
 
     # each trial has a mask and a fire arrival time channel
-    trial = loader.trails[0]
+    trial = loader.trials[0]
     assert isinstance(trial, np.ndarray)
     assert len(trial.shape) == 3
     assert trial.shape[0] == 2
