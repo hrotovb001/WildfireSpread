@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import rioxarray
+import geopandas as gpd
 from dotenv import load_dotenv
 
 class DataLoader:
@@ -65,3 +66,29 @@ class DataLoader:
                     arrival = np.where(np.isnan(arr), 0, arr)
                     stacked = np.stack([mask, arrival], axis=0)
                     self.trials.append(stacked)
+
+        # Load ignition points from IGNITIONS directory
+        ignitions_dir = os.getenv("IGNITIONS")
+        self.ignitions = []
+        if ignitions_dir and os.path.isdir(ignitions_dir):
+            from rasterio.transform import rowcol
+            # Get transform and CRS from the already opened landscape dataset
+            transform = self._landscape.rio.transform()
+            landscape_crs = self._landscape.rio.crs
+            for fname in sorted(os.listdir(ignitions_dir)):
+                if not (fname.lower().endswith('.shp') and fname.startswith('ignition_')):
+                    continue
+                fpath = os.path.join(ignitions_dir, fname)
+                gdf = gpd.read_file(fpath)
+                if len(gdf) == 0:
+                    continue
+                # Use the first geometry (expects a single Point per file)
+                geom = gdf.geometry.iloc[0]
+                # Reproject to landscape CRS when necessary
+                if gdf.crs is not None and landscape_crs is not None and gdf.crs != landscape_crs:
+                    gdf = gdf.to_crs(landscape_crs)
+                    geom = gdf.geometry.iloc[0]
+                # Convert to pixel coordinates (row, col) using the affine transform
+                rows, cols = rowcol(transform, [geom.x], [geom.y])
+                pixel = (int(rows[0]), int(cols[0]))
+                self.ignitions.append(pixel)

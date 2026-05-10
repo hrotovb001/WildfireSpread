@@ -88,7 +88,7 @@ def test_ignitions():
     assert all(isinstance(x, int) for x in ignition)
 
     y, x = ignition
-    elevation = landscape.elevation
+    elevation = loader.elevation
     assert y >= 0 and y < elevation.shape[0]
     assert x >= 0 and x < elevation.shape[1]
 
