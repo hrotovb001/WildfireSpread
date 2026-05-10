@@ -72,3 +72,23 @@ def test_trails_layer():
     # the arrival time indicates the time at which the fire reached a pixel (default to value of 0 for masked pixels)
     arrival = trial[1]
     assert not np.isnan(arrival).any()
+
+def test_ignitions():
+    loader = DataLoader()
+
+    ignitions = loader.ignitions
+    assert len(ignitions) > 0
+
+    # the ignition is the pixel coordinate relative to landscape georeference
+    # a given pixel coordinate respresents where the point in the .shp file
+    # aligns with the numpy array for landscape
+    ignition = ignitions[0]
+    assert isinstance(ignition, tuple)
+    assert len(ignition) == 2
+    assert all(isinstance(x, int) for x in ignition)
+
+    y, x = ignition
+    elevation = landscape.elevation
+    assert y >= 0 and y < elevation.shape[0]
+    assert x >= 0 and x < elevation.shape[1]
+
