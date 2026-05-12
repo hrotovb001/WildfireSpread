@@ -8,7 +8,7 @@ def test_save_frame():
     rng = np.random.default_rng()
     data = rng.random((13, 500, 500))
     
-    shutil.rmtree('./tmp')
+    shutil.rmtree('./tmp', ignore_errors=True)
 
     # creates the folder if it doesn't exist
     save_frame(data, './tmp/random_frame.png')
