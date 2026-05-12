@@ -21,8 +21,9 @@ def _loader_getitem(self, idx):
     crops = [
         arr[cy-half:cy+half, cx-half:cx+half] for arr in land_layers
     ]
-    # fire channel (only the mask, to keep total channels == 12)
+    # fire channels (mask and arrival time)
     fire_mask = trial["fire"][0][cy-half:cy+half, cx-half:cx+half]
+    fire_arrival = trial["fire"][1][cy-half:cy+half, cx-half:cx+half]
 
     # scalar layers that need to be broadcast to 500×500
     ws = np.full((500, 500), trial["windspeed"], dtype=np.float32)
@@ -30,10 +31,10 @@ def _loader_getitem(self, idx):
     fm = np.full((500, 500), trial["foliar_moisture"], dtype=np.float32)
 
     stacked = np.stack(
-        [*crops, fire_mask, ws, wd, fm], axis=0
+        [*crops, fire_mask, fire_arrival, ws, wd, fm], axis=0
     )
     # sanity check that matches the expected dimensions
-    assert stacked.shape == (12, 500, 500)
+    assert stacked.shape == (13, 500, 500)
     assert not np.isnan(stacked).any()
     return stacked
 
