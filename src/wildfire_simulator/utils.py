@@ -23,7 +23,7 @@ def save_frame(data, filepath):
     fig, axes = plt.subplots(nrows, ncols, figsize=(ncols * 2, nrows * 2))
 
     # Flatten axes for easy indexing into a 1‑D array
-    axes = np.array([axes]).flatten()
+    axes = np.atleast_1d(axes).flatten()
 
     # Plot each channel
     for i in range(n_channels):
