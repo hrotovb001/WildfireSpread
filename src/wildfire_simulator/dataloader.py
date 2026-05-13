@@ -27,27 +27,35 @@ class DataLoader:
 
         # The first band (index 0) is elevation
         self.elevation = da.isel(band=0).values
+        self.elevation[self.elevation == -9999] = 0
 
         # The second band (index 1) is slope
         self.slope = da.isel(band=1).values
+        self.slope[self.slope == -9999] = 0
 
         # The third band (index 2) is aspect
         self.aspect = da.isel(band=2).values
+        self.aspect[self.aspect == -9999] = 0
 
         # Band 3: fuel model (FBFM40)
         self.fuel = da.isel(band=3).values
+        self.fuel[self.fuel == -9999] = 0
 
         # Band 4: canopy cover (CC)
         self.canopy_cover = da.isel(band=4).values
+        self.canopy_cover[self.canopy_cover == -9999] = 0
 
         # Band 5: stand height (CH)
         self.stand_height = da.isel(band=5).values
+        self.stand_height[self.stand_height == -9999] = 0
 
         # Band 6: canopy base height (CBH)
         self.canopy_base_height = da.isel(band=6).values
+        self.canopy_base_height[self.canopy_base_height == -9999] = 0
 
         # Band 7: canopy bulk density (CBD)
         self.canopy_bulk_density = da.isel(band=7).values
+        self.canopy_bulk_density[self.canopy_bulk_density == -9999] = 0
 
         # Load fire trial arrival times from TRIALS directory
         trials_dir = os.getenv("TRIALS")
@@ -60,6 +68,8 @@ class DataLoader:
                     # each trial GeoTIFF has one band: fire arrival time,
                     # with NaN where fire never arrives
                     arr = trial_ds.isel(band=0).values
+                    # treat -9999 as nodata (same as NaN)
+                    arr[arr == -9999] = np.nan
                     # mask: 1 where fire arrived (non‑NaN), 0 elsewhere
                     mask = (~np.isnan(arr)).astype(np.uint8)
                     # replace NaN with 0 so the array can be used numerically
