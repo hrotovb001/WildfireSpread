@@ -63,13 +63,17 @@ def test_landscape_layers():
     assert not (canopy_bulk_density == -9999).any()
 
 def test_ignitions():
+    # ignitions are a dict where key is the ignition number (int)
+    # and the value is the ignition
+    # the ignition number comes from the file name "ignition_%d.shp"
     ignitions = dataset.ignitions
     assert len(ignitions) > 0
+    assert isinstance(ignitions, dict)
 
     # the ignition is the pixel coordinate relative to landscape georeference
     # a given pixel coordinate respresents where the point in the .shp file
     # aligns with the numpy array for landscape
-    ignition = ignitions[0]
+    ignition = next(iter(ignitions))
     assert isinstance(ignition, tuple)
     assert len(ignition) == 2
     assert all(isinstance(x, int) for x in ignition)
