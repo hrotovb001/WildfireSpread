@@ -1,11 +1,7 @@
 import numpy as np
 from torch.utils.data import Dataset
 
-from wildfire_simulator.datasets import WildfireDataset
-
-dataset = WildfireDataset()
-
-def test_landscape_layers():
+def test_landscape_layers(dataset):
     elevation = dataset.elevation 
     assert isinstance(elevation, np.ndarray)
     assert len(elevation.shape) == 2
@@ -62,7 +58,7 @@ def test_landscape_layers():
     assert not np.isnan(canopy_bulk_density).any()
     assert not (canopy_bulk_density == -9999).any()
 
-def test_ignitions():
+def test_ignitions(dataset):
     # ignitions are a dict where key is the ignition number (int)
     # and the value is the ignition
     # the ignition number comes from the file name "ignition_%d.shp"
@@ -85,7 +81,7 @@ def test_ignitions():
     assert y >= 0 and y < elevation.shape[0]
     assert x >= 0 and x < elevation.shape[1]
 
-def test_trails():
+def test_trails(dataset):
     trials = dataset.trials
     assert len(dataset.trials) > 0
 
@@ -117,7 +113,7 @@ def test_trails():
     # file path where trial comes from
     assert isinstance(trial["file_path"], str)
 
-def test_trial_array():
+def test_trial_array(dataset):
     assert len(dataset) > 0
     
     arr = dataset[0]
@@ -128,10 +124,10 @@ def test_trial_array():
     assert not np.isnan(arr).any()
     assert not (arr == -9999).any()
 
-def test_pytorch_dataset():
+def test_pytorch_dataset(dataset):
     assert isinstance(dataset, Dataset)
 
-def test_min_max_norm():
+def test_min_max_norm(dataset):
     min_val = dataset.min_val
     assert min_val.shape == (13,)
     assert not np.isnan(min_val).any()
