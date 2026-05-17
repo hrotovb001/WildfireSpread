@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 from torch.utils.data import Dataset
 
 def test_landscape_layers(dataset):
@@ -113,18 +114,19 @@ def test_trails(dataset):
     # file path where trial comes from
     assert isinstance(trial["file_path"], str)
 
-def test_trial_array(dataset):
+def test_dataset(dataset):
     assert len(dataset) > 0
     
-    arr = dataset[0]
+    tensor = dataset[0]
+    assert isinstance(tensor, torch.Tensor)
 
     # 8 landscape, 2 fire, windspeed, winddir and foliar_moisture
     # frame is centered at the ingition coordinate
-    assert arr.shape == (13, 500, 500)
-    assert not np.isnan(arr).any()
-    assert not (arr == -9999).any()
+    assert tensor.shape == (13, 500, 500)
+    assert not torch.isnan(tensor).any()
+    assert not (tensor == -9999).any()
 
-def test_pytorch_dataset(dataset):
+def test_pytorch_dataset_type(dataset):
     assert isinstance(dataset, Dataset)
 
 def test_min_max_norm(dataset):
