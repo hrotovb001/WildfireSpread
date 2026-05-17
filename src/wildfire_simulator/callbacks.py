@@ -24,7 +24,7 @@ class ModelCheckpoint:
             return
         if self.best_metric is None or self.compare(current, self.best_metric):
             self.best_metric = current
-            fname = self.filename_template.format(epoch=epoch, val_loss=current)
+            fname = self.filename_template.format(epoch=epoch, val_loss=current) + ".pt"
             os.makedirs('./checkpoints', exist_ok=True)
             path = os.path.join('./checkpoints', fname)
             torch.save(model.state_dict(), path)
