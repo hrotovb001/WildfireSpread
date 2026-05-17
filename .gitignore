@@ -1,7 +1,8 @@
 .aider*
 .direnv
-tmp
+tmp/
 INSTRUCTIONS.md
+checkpoints/
 
 # Created by https://www.toptal.com/developers/gitignore/api/python
 # Edit at https://www.toptal.com/developers/gitignore?templates=python
