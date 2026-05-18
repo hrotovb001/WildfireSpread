@@ -62,22 +62,16 @@ class ForwardBurnTrainer:
             inputs_14, targets = ForwardBurnTrainer.prepare_batch(
                 batch=batch, dt=self.dt, max_t=self.max_t
             )
-            # Model expects 13 input channels (no t channel)
-            inputs = inputs_14[:, :13, :, :]
-
-            # Pad to a multiple of 32 so the model's internal attention gates
-            # always receive tensors with compatible spatial sizes.
-            inputs_padded, orig_h, orig_w = _pad_to_multiple(inputs, multiple=32)
-            targets_padded, _, _ = _pad_to_multiple(targets, multiple=32)
+            # Model expects 14 input channels (13 feature channels + time channel)
+            # inputs_14 and targets are already padded to a multiple of 32
+            # so we can feed them directly without additional padding or cropping.
 
             self.optimizer.zero_grad()
-            preds_padded = self.model(inputs_padded)
+            preds_padded = self.model(inputs_14)
             # Handle possible tuple/list output from model
             if isinstance(preds_padded, (tuple, list)):
                 preds_padded = preds_padded[0]
-            # Crop predictions back to the original spatial size
-            preds = preds_padded[:, :, :orig_h, :orig_w]
-            loss = self.loss_fn(preds, targets)
+            loss = self.loss_fn(preds_padded, targets)
             loss.backward()
             self.optimizer.step()
 
@@ -102,21 +96,15 @@ class ForwardBurnTrainer:
                 inputs_14, targets = ForwardBurnTrainer.prepare_batch(
                     batch=batch, dt=self.dt, max_t=self.max_t, generator=val_gen
                 )
-                # Model expects 13 input channels
-                inputs = inputs_14[:, :13, :, :]
+                # Model expects 14 input channels (13 feature channels + time channel)
+                # inputs_14 and targets are already padded to a multiple of 32
+                # so we can feed them directly without additional padding or cropping.
 
-                # Pad to a multiple of 32 so the model's internal attention gates
-                # always receive tensors with compatible spatial sizes.
-                inputs_padded, orig_h, orig_w = _pad_to_multiple(inputs, multiple=32)
-                targets_padded, _, _ = _pad_to_multiple(targets, multiple=32)
-
-                preds_padded = self.model(inputs_padded)
+                preds_padded = self.model(inputs_14)
                 # Handle possible tuple/list output from model
                 if isinstance(preds_padded, (tuple, list)):
                     preds_padded = preds_padded[0]
-                # Crop predictions back to the original spatial size
-                preds = preds_padded[:, :, :orig_h, :orig_w]
-                loss = self.loss_fn(preds, targets)
+                loss = self.loss_fn(preds_padded, targets)
                 total_loss += loss.item() * N
 
         return total_loss / n_samples
