@@ -1,6 +1,7 @@
 import torch
 import torch.nn.functional as F
 import random
+import time
 
 from tqdm import tqdm
 
@@ -58,7 +59,8 @@ class ForwardBurnTrainer:
         total_loss = 0.0
         n_samples = len(self.train_loader.dataset)
 
-        pbar = tqdm(self.train_loader, desc=format_train_description(epoch, total_epochs, 0.0))
+        desc = format_train_description(epoch, 0.0)
+        pbar = tqdm(self.train_loader, desc=desc)
         for batch in pbar:
             batch = batch.to(self.device)
             N = batch.size(0)
@@ -93,7 +95,8 @@ class ForwardBurnTrainer:
         val_gen = torch.Generator(device=torch.device('cpu'))
         val_gen.manual_seed(0)
 
-        pbar = tqdm(self.val_loader, desc=format_val_description(epoch, total_epochs, 0.0))
+        desc = format_val_description(0.0)
+        pbar = tqdm(self.val_loader, desc=desc)
         with torch.no_grad():
             for batch in pbar:
                 batch = batch.to(self.device)
@@ -112,20 +115,30 @@ class ForwardBurnTrainer:
                     preds_padded = preds_padded[0]
                 loss = self.loss_fn(preds_padded, targets)
                 total_loss += loss.item() * N
+                # Update progress bar description with current val_loss
+                pbar.set_description(format_val_description(loss.item()))
                 pbar.set_postfix(val_loss=f"{loss.item():.4f}")
 
         return total_loss / n_samples
 
     def fit(self):
         total_epochs = self.epochs
+        start_time = time.time()
         for epoch in range(total_epochs):
             train_loss = self._train_epoch(epoch, total_epochs)
             val_loss = self._validate(epoch, total_epochs)
             metrics = {'val_loss': val_loss}
             for cb in self.callbacks:
                 cb.on_validation_end(epoch=epoch, metrics=metrics, model=self.model)
+        duration = time.time() - start_time
+        summary = {
+            'best_epoch': total_epochs,
+            'train_loss': train_loss,
+            'val_loss': val_loss,
+            'duration_seconds': duration,
+        }
         # Final summary after all epochs
-        print(format_results(train_loss, val_loss))
+        print(format_results(summary))
 
     def evaluate(self):
         """Return the current validation loss as a dict."""
