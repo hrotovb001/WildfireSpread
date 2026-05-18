@@ -2,7 +2,10 @@ import torch
 import torch.nn.functional as F
 import random
 
+from tqdm import tqdm
+
 from wildfire_simulator.forward_burn_process import ForwardBurnProcess
+from wildfire_simulator.cli import format_train_description, format_val_description, format_results
 
 
 def _pad_to_multiple(tensor, multiple=32):
@@ -50,12 +53,13 @@ class ForwardBurnTrainer:
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model.to(self.device)
 
-    def _train_epoch(self):
+    def _train_epoch(self, epoch, total_epochs):
         self.model.train()
         total_loss = 0.0
         n_samples = len(self.train_loader.dataset)
 
-        for batch in self.train_loader:
+        pbar = tqdm(self.train_loader, desc=format_train_description(epoch, total_epochs, 0.0))
+        for batch in pbar:
             batch = batch.to(self.device)
             N = batch.size(0)
             # Use the static method to create training pairs (includes random t per sample)
@@ -76,10 +80,11 @@ class ForwardBurnTrainer:
             self.optimizer.step()
 
             total_loss += loss.item() * N
+            pbar.set_postfix(loss=f"{loss.item():.4f}")
 
         return total_loss / n_samples
 
-    def _validate(self):
+    def _validate(self, epoch, total_epochs):
         self.model.eval()
         total_loss = 0.0
         n_samples = len(self.val_loader.dataset)
@@ -88,8 +93,9 @@ class ForwardBurnTrainer:
         val_gen = torch.Generator(device=torch.device('cpu'))
         val_gen.manual_seed(0)
 
+        pbar = tqdm(self.val_loader, desc=format_val_description(epoch, total_epochs, 0.0))
         with torch.no_grad():
-            for batch in self.val_loader:
+            for batch in pbar:
                 batch = batch.to(self.device)
                 N = batch.size(0)
 
@@ -106,20 +112,24 @@ class ForwardBurnTrainer:
                     preds_padded = preds_padded[0]
                 loss = self.loss_fn(preds_padded, targets)
                 total_loss += loss.item() * N
+                pbar.set_postfix(val_loss=f"{loss.item():.4f}")
 
         return total_loss / n_samples
 
     def fit(self):
-        for epoch in range(self.epochs):
-            _train_loss = self._train_epoch()
-            val_loss = self._validate()
+        total_epochs = self.epochs
+        for epoch in range(total_epochs):
+            train_loss = self._train_epoch(epoch, total_epochs)
+            val_loss = self._validate(epoch, total_epochs)
             metrics = {'val_loss': val_loss}
             for cb in self.callbacks:
                 cb.on_validation_end(epoch=epoch, metrics=metrics, model=self.model)
+        # Final summary after all epochs
+        print(format_results(train_loss, val_loss))
 
     def evaluate(self):
         """Return the current validation loss as a dict."""
-        val_loss = self._validate()
+        val_loss = self._validate(epoch=0, total_epochs=1)
         return {'val_loss': val_loss}
 
     @staticmethod
