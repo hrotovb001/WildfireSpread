@@ -188,4 +188,9 @@ class ForwardBurnTrainer:
         inputs = torch.cat(input_frames, dim=0)   # (N, 14, H, W)
         targets = torch.cat(target_frames, dim=0) # (N, 2, H, W)
 
+        # Pad spatial dimensions to the next multiple of 32 (the raw data is
+        # 500×500 → 512×512).
+        inputs, _, _ = _pad_to_multiple(inputs, multiple=32)
+        targets, _, _ = _pad_to_multiple(targets, multiple=32)
+
         return inputs, targets
