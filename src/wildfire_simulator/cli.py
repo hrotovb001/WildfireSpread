@@ -9,6 +9,6 @@ def format_results(summary):
         f"=== Training Complete ===\n"
         f"Best Epoch: {summary['best_epoch']}\n"
         f"Train Loss: {summary['train_loss']:.4f}\n"
-        f"Val Loss: {summary['val_loss']:.4f}%\n"
+        f"Val Loss: {summary['val_loss']:.4f}\n"
         f"Time Elapsed: {summary['duration_seconds']:.2f}s"
     )

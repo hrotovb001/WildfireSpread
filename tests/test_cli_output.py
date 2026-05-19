@@ -25,7 +25,7 @@ def test_format_results():
         "=== Training Complete ===\n"
         "Best Epoch: 12\n"
         "Train Loss: 0.0234\n"
-        "Val Loss: 0.0358%\n"
+        "Val Loss: 0.0358\n"
         "Time Elapsed: 145.20s"
     )
     assert result == expected_output
